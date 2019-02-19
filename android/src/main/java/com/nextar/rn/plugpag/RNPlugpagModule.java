@@ -85,15 +85,15 @@ public class RNPlugpagModule extends ReactContextBaseJavaModule {
     PlugPagAppIdentification appIdentification = new PlugPagAppIdentification(appName, appVersion);
     final PlugPag plugpag = new PlugPag(reactContext, appIdentification);
 
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-    Callable<Integer> callable = new Callable<Integer>() {
-      @Override
-      public Integer call() {
-        return plugpag.requestAuthentication(getCurrentActivity());
-      }
-    };
-    executor.submit(callable);
-    executor.shutdown();
+//    ExecutorService executor = Executors.newSingleThreadExecutor();
+//    Callable<Integer> callable = new Callable<Integer>() {
+//      @Override
+//      public Integer call() {
+//        return plugpag.requestAuthentication(getCurrentActivity());
+//      }
+//    };
+//    executor.submit(callable);
+//    executor.shutdown();
   }
 
   @ReactMethod
@@ -117,20 +117,20 @@ public class RNPlugpagModule extends ReactContextBaseJavaModule {
     }
 
     ExecutorService connectionExecutor = Executors.newSingleThreadExecutor();
-    Callable<PlugPagTransactionResult> connectionCallable = new Callable<PlugPagTransactionResult>() {
+    Callable<Integer> connectionCallable = new Callable<Integer>() {
       @Override
-      public PlugPagTransactionResult call() {
+      public Integer call() {
         return plugpag.initBTConnection(device);
       }
     };
-    Future<PlugPagTransactionResult> btConnection = connectionExecutor.submit(connectionCallable);
+    Future<Integer> btConnection = connectionExecutor.submit(connectionCallable);
     connectionExecutor.shutdown();
 
     // final strings for success or fail :)
     String resultCode;
     String resultMessage;
 
-    if (btConnection.get() != null && btConnection.get().getResult() == PlugPag.RET_OK) {
+    if (btConnection != null && btConnection.get() == PlugPag.RET_OK) {
       final PlugPagPaymentData paymentData = new PlugPagPaymentData(
               paymentType,
               Integer.valueOf(amount),
@@ -171,8 +171,8 @@ public class RNPlugpagModule extends ReactContextBaseJavaModule {
       resultCode = "0";
       resultMessage = "Não foi possível conectar ao device.";
       if (btConnection.get() != null) {
-        resultCode = String.valueOf(btConnection.get().getResult());
-        resultMessage = btConnection.get().getMessage();
+        resultCode = btConnection.get().toString();
+//        resultMessage = btConnection.get().getMessage();
       }
       promise.reject(resultCode, resultMessage);
     }
